@@ -1,104 +1,89 @@
-import pygame
-from random import choice, randrange
+import pygame as pg
+from random import random
+from collections import deque
+
+
+def get_rect(x, y):
+    return x * TILE + 1, y * TILE + 1, TILE - 2, TILE - 2
+
+
+def get_next_nodes(x, y):
+    check_next_node = lambda x, y: True if 0 <= x < cols and 0 <= y < rows and not grid[y][x] else False
+    ways = [-1, 0], [0, -1], [1, 0], [0, 1], [-1, -1], [1, -1], [1, 1], [-1, 1]
+    return [(x + dx, y + dy) for dx, dy in ways if check_next_node(x + dx, y + dy)]
+
+
+def get_click_mouse_pos():
+    x, y = pg.mouse.get_pos()
+    grid_x, grid_y = x // TILE, y // TILE
+    pg.draw.rect(sc, pg.Color('red'), get_rect(grid_x, grid_y))
+    click = pg.mouse.get_pressed()
+    return (grid_x, grid_y) if click[0] else False
+
+
+def bfs(start, goal, graph):
+    queue = deque([start])
+    visited = {start: None}
+
+    while queue:
+        cur_node = queue.popleft()
+        if cur_node == goal:
+            break
+
+        next_nodes = graph[cur_node]
+        for next_node in next_nodes:
+            if next_node not in visited:
+                queue.append(next_node)
+                visited[next_node] = cur_node
+    return queue, visited
+
 
 RES = WIDTH, HEIGHT = 1202, 902
-TILE = 50
+TILE = 30
 cols, rows = WIDTH // TILE, HEIGHT // TILE
 
-pygame.init()
-sc = pygame.display.set_mode(RES)
-clock = pygame.time.Clock()
+pg.init()
+sc = pg.display.set_mode(RES)
+clock = pg.time.Clock()
+# grid
+grid = [[1 if random() < 0.2 else 0 for col in range(cols)] for row in range(rows)]
+# dict of adjacency lists
+graph = {}
+for y, row in enumerate(grid):
+    for x, col in enumerate(row):
+        if not col:
+            graph[(x, y)] = graph.get((x, y), []) + get_next_nodes(x, y)
 
-class Cell:
-    def __init__(self, x, y):
-        self.x, self.y = x, y
-        self.walls = {'top': True, 'right': True, 'bottom': True, 'left': True}
-        self.visited = False
-        self.thickness = 4
-
-    def draw_current_cell(self):
-        x, y = self.x * TILE, self.y * TILE
-        pygame.draw.rect(sc, pygame.Color('Saddlebrown'), (x + 2, y + 2, TILE - 2, TILE - 2))
-        
-    def draw(self):
-        x, y = self.x * TILE, self.y * TILE
-        if self.visited:
-            pygame.draw.rect(sc, pygame.Color('black'), (x, y, TILE, TILE))
-            
-        if self.walls['top']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x, y), (x + TILE, y), self.thickness)
-        if self.walls['right']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x + TILE, y), (x + TILE, y + TILE), self.thickness)
-        if self.walls['bottom']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x + TILE, y + TILE), (x , y + TILE), self.thickness)
-        if self.walls['left']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x, y + TILE), (x, y), self.thickness)
-    
-    def check_cell(self, x, y):
-        find_index = lambda x, y: x + y * cols
-        if x < 0 or x > cols - 1 or y < 0 or y > rows - 1:
-            return False
-        return grid_cells[find_index(x, y)]
-    
-    def check_neighbors(self):
-        neighbors = []
-        top = self.check_cell(self.x, self.y - 1)
-        right = self.check_cell(self.x + 1, self.y)
-        bottom = self.check_cell(self.x, self.y + 1)
-        left = self.check_cell(self.x - 1, self.y)
-        if top and not top.visited:
-            neighbors.append(top)
-        if right and not right.visited:
-            neighbors.append(right)
-        if bottom and not bottom.visited:
-            neighbors.append(bottom)
-        if left and not left.visited:
-            neighbors.append(left)
-        return choice(neighbors) if neighbors else False
-
-def remove_walls(current, next):
-    dx = current.x - next.x
-    if dx == 1:
-        current.walls['left'] = False
-        next.walls['right'] = False
-    elif dx == -1:
-        current.walls['right'] = False
-        next.walls['left'] = False
-    dy = current.y - next.y
-    if dy == 1:
-        current.walls['top'] = False
-        next.walls['bottom'] = False
-    elif dy == -1:
-        current.walls['bottom'] = False
-        next.walls['top'] = False
-        
-grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
-current_cell = grid_cells[0]
-stack = []
-colors, color = [], 40
+# BFS settings
+start = (0, 0)
+goal = start
+queue = deque([start])
+visited = {start: None}
 
 while True:
-    sc.fill(pygame.Color('darkslategray'))
-    
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            exit()
-    
-    [cell.draw() for cell in grid_cells]
-    current_cell.visited = True
-    current_cell.draw_current_cell()
-    [pygame.draw.rect(sc, colors[i], (cell.x * TILE + 5, cell.y * TILE + 5, TILE - 10, TILE - 10), border_radius=12) for i, cell in enumerate(stack)]
-    
-    next_cell = current_cell.check_neighbors()
-    if next_cell:
-        next_cell.visited = True
-        stack.append(current_cell)
-        colors.append((min(color, 255), 10, 100))
-        color += 1
-        remove_walls(current_cell, next_cell)
-        current_cell = next_cell
-    elif stack:
-        current_cell = stack.pop()
-        
-    pygame.display.flip()
-    clock.tick(300)
+    # fill screen
+    sc.fill(pg.Color('black'))
+    # draw grid
+    [[pg.draw.rect(sc, pg.Color('darkorange'), get_rect(x, y), border_radius=TILE // 5)
+      for x, col in enumerate(row) if col] for y, row in enumerate(grid)]
+    # draw BFS work
+    [pg.draw.rect(sc, pg.Color('forestgreen'), get_rect(x, y)) for x, y in visited]
+    [pg.draw.rect(sc, pg.Color('darkslategray'), get_rect(x, y)) for x, y in queue]
+
+    # bfs, get path to mouse click
+    mouse_pos = get_click_mouse_pos()
+    if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
+        queue, visited = bfs(start, mouse_pos, graph)
+        goal = mouse_pos
+
+    # draw path
+    path_head, path_segment = goal, goal
+    while path_segment and path_segment in visited:
+        pg.draw.rect(sc, pg.Color('white'), get_rect(*path_segment), TILE, border_radius=TILE // 3)
+        path_segment = visited[path_segment]
+    pg.draw.rect(sc, pg.Color('blue'), get_rect(*start), border_radius=TILE // 3)
+    pg.draw.rect(sc, pg.Color('magenta'), get_rect(*path_head), border_radius=TILE // 3)
+    # pygame necessary lines
+    [exit() for event in pg.event.get() if event.type == pg.QUIT]
+    pg.display.flip()
+    clock.tick(30)
