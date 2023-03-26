@@ -31,3 +31,8 @@ def dfs(start, goal, graph):
                 queue.append(next_node)
                 visited[next_node] = cur_node
     return queue, visited
+
+def h(p1, goal):
+	x1, y1 = p1
+	x2, y2 = goal
+	return abs(x1 - x2) + abs(y1 - y2)
