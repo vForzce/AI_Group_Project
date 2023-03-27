@@ -8,7 +8,7 @@ def get_rect(x, y):
 
 def get_next_nodes(grid, x, y):
     check_next_node = lambda x, y: True if 0 <= x < cols and 0 <= y < rows and not grid[y][x] else False
-    ways = [1, 0], [-1, 0], [0, 1], [0, -1]
+    ways = [0, -1], [-1, 0], [0, 1], [1, 0]
     return [(x + dx, y + dy) for dx, dy in ways if check_next_node(x + dx, y + dy)]
 
 def new_grid(rows, cols):
@@ -31,7 +31,8 @@ def draw_grid(grid):
     # draw grid
     [[pg.draw.rect(sc, pg.Color('darkorange'), get_rect(x, y), border_radius=TILE // 5)
       for x, col in enumerate(row) if col] for y, row in enumerate(grid)]
-    
+
+
 RES = WIDTH, HEIGHT = 902, 602
 TILE = 30
 cols, rows = WIDTH // TILE, HEIGHT // TILE
@@ -97,6 +98,7 @@ while True:
                 if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
                     queue, visited = pathfinding.dfs(start, mouse_pos, graph)
                     goal = mouse_pos
+
             if event.key == pg.K_b:
                 if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
                     queue, visited = pathfinding.bfs(start, mouse_pos, graph)
