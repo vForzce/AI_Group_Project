@@ -28,7 +28,11 @@ def draw_mouse_cursor():
 
 def draw_grid(grid):
     # fill screen
-    sc.fill(pg.Color('black'))
+    sc.fill(pg.Color(80, 80, 80))
+    pg.draw.rect(sc, pg.Color(60, 60, 60), pg.Rect(0, 120, 902, 120))
+    pg.draw.rect(sc, pg.Color(40, 40, 40), pg.Rect(0, 240, 902, 120))
+    pg.draw.rect(sc, pg.Color(20, 20, 20), pg.Rect(0, 360, 902, 120))
+    pg.draw.rect(sc, pg.Color(0, 0, 0), pg.Rect(0, 480, 902, 120))
     # draw grid
     [[pg.draw.rect(sc, pg.Color('darkorange'), get_rect(x, y), border_radius=TILE // 5)
       for x, col in enumerate(row) if col] for y, row in enumerate(grid)]
