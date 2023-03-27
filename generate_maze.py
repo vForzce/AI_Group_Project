@@ -13,6 +13,7 @@ def get_next_nodes(grid, x, y):
 
 def new_grid(rows, cols):
     grid = [[1 if random() < 0.2 else 0 for _ in range(cols)] for _ in range(rows)]
+    grid[0][0] = 0
     graph = {}
     for y, row in enumerate(grid):
         for x, col in enumerate(row):
@@ -43,6 +44,7 @@ clock = pg.time.Clock()
 
 # grid
 grid = [[1 if random() < 0.2 else 0 for _ in range(cols)] for _ in range(rows)]
+grid[0][0] = 0
 # dict of adjacency lists
 graph = {}
 for y, row in enumerate(grid):
@@ -102,6 +104,11 @@ while True:
             if event.key == pg.K_b:
                 if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
                     queue, visited = pathfinding.bfs(start, mouse_pos, graph)
+                    goal = mouse_pos
+            
+            if event.key == pg.K_g:
+                if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
+                    queue, visited = pathfinding.greedy(start, mouse_pos, graph)
                     goal = mouse_pos    
 
     pg.display.flip()
