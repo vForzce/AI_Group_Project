@@ -21,6 +21,7 @@ def new_grid(rows, cols):
             if not col:
                 graph[(x, y)] = graph.get((x, y), []) + get_next_nodes(grid, x, y)
                 weight[(x, y)] = (y // 4) + 1
+    weight[(0, 0)] = 0
     return grid, graph, weight
 
 def draw_mouse_cursor():
@@ -61,6 +62,7 @@ for y, row in enumerate(grid):
         if not col:
             graph[(x, y)] = graph.get((x, y), []) + get_next_nodes(grid, x, y)
             weight[(x, y)] = (y // 4) + 1
+weight[(0, 0)] = 0
 
 # pathfinding settings
 start = (0, 0)
@@ -81,14 +83,17 @@ while True:
     pg.draw.rect(sc, pg.Color('magenta'), get_rect(mouse_pos[0], mouse_pos[1]), border_radius=TILE // 3)
     
     # draw path
+    total_weight = 0
     path_head, path_segment = goal, goal
     while path_segment and path_segment in visited:
         pg.draw.rect(sc, pg.Color('white'), get_rect(*path_segment), TILE, border_radius=TILE // 3)
+        total_weight += weight[path_segment]
         path_segment = visited[path_segment]
+        
 
     pg.draw.rect(sc, pg.Color('blue'), get_rect(*start), border_radius=TILE // 3)
     pg.draw.rect(sc, pg.Color('magenta'), get_rect(*path_head), border_radius=TILE // 3)
-    
+
     # interaction
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -136,6 +141,9 @@ while True:
                     pg.display.set_caption('A* Search')
                     queue, visited = pathfinding.astar(start, mouse_pos, graph, weight)
                     goal = mouse_pos
+                    
+            if event.key == pg.K_w:
+                print(total_weight)
 
     pg.display.flip()
     clock.tick(30)

@@ -5,6 +5,7 @@ For a graph, visualize the process of BFS, DFS, UCS, Greedy, and A* algorithm.
 
 ## Control
 r: generate random maze<br />
+w: weight of current path<br />
 d: dept first search<br />
 b: breath first search<br />
 u: uniform cost search<br />
