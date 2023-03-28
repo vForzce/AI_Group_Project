@@ -15,11 +15,13 @@ def new_grid(rows, cols):
     grid = [[1 if random() < 0.2 else 0 for _ in range(cols)] for _ in range(rows)]
     grid[0][0] = 0
     graph = {}
+    weight = {}
     for y, row in enumerate(grid):
         for x, col in enumerate(row):
             if not col:
                 graph[(x, y)] = graph.get((x, y), []) + get_next_nodes(grid, x, y)
-    return grid, graph
+                weight[(x, y)] = (y // 4) + 1
+    return grid, graph, weight
 
 def draw_mouse_cursor():
     x, y = pg.mouse.get_pos()
@@ -45,6 +47,7 @@ cols, rows = WIDTH // TILE, HEIGHT // TILE
 pg.init()
 sc = pg.display.set_mode(RES)
 clock = pg.time.Clock()
+pg.display.set_caption("Path Finding Algorithms")
 
 # grid
 grid = [[1 if random() < 0.2 else 0 for _ in range(cols)] for _ in range(rows)]
@@ -98,33 +101,39 @@ while True:
             
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_r:
-                grid, graph = new_grid(rows, cols)
+                pg.display.set_caption('Path Finding Algorithms')
+                grid, graph, weight = new_grid(rows, cols)
                 queue = deque([start])
                 visited = {start: None}
                 draw_grid(grid)
                 
             if event.key == pg.K_d:
                 if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
+                    pg.display.set_caption('Depth First Search')
                     queue, visited = pathfinding.dfs(start, mouse_pos, graph)
                     goal = mouse_pos
 
             if event.key == pg.K_b:
                 if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
+                    pg.display.set_caption('Breath First Search')
                     queue, visited = pathfinding.bfs(start, mouse_pos, graph)
-                    goal = mouse_pos
-            
-            if event.key == pg.K_g:
-                if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
-                    queue, visited = pathfinding.greedy(start, mouse_pos, graph)
                     goal = mouse_pos
             
             if event.key == pg.K_u:
                 if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
+                    pg.display.set_caption('Uniform Cost Search')
                     queue, visited = pathfinding.ucs(start, mouse_pos, graph, weight)
+                    goal = mouse_pos
+                    
+            if event.key == pg.K_g:
+                if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
+                    pg.display.set_caption('Greedy Search')
+                    queue, visited = pathfinding.greedy(start, mouse_pos, graph)
                     goal = mouse_pos
             
             if event.key == pg.K_a:
                 if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
+                    pg.display.set_caption('A* Search')
                     queue, visited = pathfinding.astar(start, mouse_pos, graph, weight)
                     goal = mouse_pos
 
