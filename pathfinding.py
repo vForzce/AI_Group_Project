@@ -39,6 +39,26 @@ def h(p, goal):
 	x2, y2 = goal
 	return abs(x1 - x2) + abs(y1 - y2)
 
+def ucs(start, goal, graph, weight):
+    queue = [[0, start]]
+    visited = {start: None}
+
+    while queue:
+        queue = sorted(queue, key=lambda x: x[0])
+        cur_node = queue.pop(0)
+        tup = cur_node[1]
+        if tup == goal:
+            break
+
+        next_nodes = graph[tup]
+        for next_node in next_nodes:
+            if next_node not in visited:
+                cost = cur_node[0] + weight[next_node]
+                queue.append([cost, next_node])
+                visited[next_node] = tup
+                
+    return deque([item[1] for item in queue]), visited
+
 def greedy(start, goal, graph):
     queue = [[h(start, goal), start]]
     visited = {start: None}
@@ -54,5 +74,25 @@ def greedy(start, goal, graph):
             if next_node not in visited:
                 queue.append([h(next_node, goal), next_node])
                 visited[next_node] = cur_node
+                
+    return deque([item[1] for item in queue]), visited
+
+def astar(start, goal, graph, weight):
+    queue = [[h(start, goal), start]]
+    visited = {start: None}
+
+    while queue:
+        queue = sorted(queue, key=lambda x: x[0])
+        cur_node = queue.pop(0)
+        tup = cur_node[1]
+        if tup == goal:
+            break
+
+        next_nodes = graph[tup]
+        for next_node in next_nodes:
+            if next_node not in visited:
+                cost = cur_node[0] + weight[next_node] + h(next_node, goal) - h(tup, goal)
+                queue.append([cost, next_node])
+                visited[next_node] = tup
                 
     return deque([item[1] for item in queue]), visited

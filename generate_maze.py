@@ -48,6 +48,8 @@ clock = pg.time.Clock()
 
 # grid
 grid = [[1 if random() < 0.2 else 0 for _ in range(cols)] for _ in range(rows)]
+# weight = [[(row // 4) + 1 for _ in range(cols)] for row in range(rows)]
+weight = {}
 grid[0][0] = 0
 # dict of adjacency lists
 graph = {}
@@ -55,6 +57,7 @@ for y, row in enumerate(grid):
     for x, col in enumerate(row):
         if not col:
             graph[(x, y)] = graph.get((x, y), []) + get_next_nodes(grid, x, y)
+            weight[(x, y)] = (y // 4) + 1
 
 # pathfinding settings
 start = (0, 0)
@@ -113,7 +116,17 @@ while True:
             if event.key == pg.K_g:
                 if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
                     queue, visited = pathfinding.greedy(start, mouse_pos, graph)
-                    goal = mouse_pos    
+                    goal = mouse_pos
+            
+            if event.key == pg.K_u:
+                if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
+                    queue, visited = pathfinding.ucs(start, mouse_pos, graph, weight)
+                    goal = mouse_pos
+            
+            if event.key == pg.K_a:
+                if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
+                    queue, visited = pathfinding.astar(start, mouse_pos, graph, weight)
+                    goal = mouse_pos
 
     pg.display.flip()
     clock.tick(30)
