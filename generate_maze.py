@@ -102,12 +102,14 @@ while True:
     for event in pg.event.get():
         if event.type == pg.QUIT:
             exit()
-            
-        if pg.mouse.get_pressed()[0]: # LEFT
+        
+        # set goal
+        if pg.mouse.get_pressed()[0]:
             x, y = pg.mouse.get_pos()
             grid_x, grid_y = x // TILE, y // TILE
             mouse_pos = (grid_x, grid_y)
-            
+        
+        # choose algorithm
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_r:
                 pg.display.set_caption('Path Finding Algorithms')
