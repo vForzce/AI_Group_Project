@@ -12,8 +12,13 @@ def get_next_nodes(grid, x, y):
     return [(x + dx, y + dy) for dx, dy in ways if check_next_node(x + dx, y + dy)]
 
 def new_grid(rows, cols):
+    # random grid
     grid = [[1 if random() < 0.2 else 0 for _ in range(cols)] for _ in range(rows)]
     grid[0][0] = 0
+    for y in range(3):
+        for x in range(cols - 3, cols):
+            grid[y][x] = 1
+
     graph = {}
     weight = {}
     for y, row in enumerate(grid):
@@ -41,28 +46,21 @@ def draw_grid(grid):
       for x, col in enumerate(row) if col] for y, row in enumerate(grid)]
 
 
-RES = WIDTH, HEIGHT = 902, 602
+# set bound
+RES = WIDTH, HEIGHT = 900, 600
 TILE = 30
 cols, rows = WIDTH // TILE, HEIGHT // TILE
 
+# initialize pygame
 pg.init()
 sc = pg.display.set_mode(RES)
 clock = pg.time.Clock()
 pg.display.set_caption("Path Finding Algorithms")
 
-# grid
-grid = [[1 if random() < 0.2 else 0 for _ in range(cols)] for _ in range(rows)]
-# weight = [[(row // 4) + 1 for _ in range(cols)] for row in range(rows)]
-weight = {}
-grid[0][0] = 0
-# dict of adjacency lists
-graph = {}
-for y, row in enumerate(grid):
-    for x, col in enumerate(row):
-        if not col:
-            graph[(x, y)] = graph.get((x, y), []) + get_next_nodes(grid, x, y)
-            weight[(x, y)] = (y // 4) + 1
-weight[(0, 0)] = 0
+font = pg.font.SysFont('arial', 50, bold=True)
+
+# initialize grid
+grid, graph, weight = new_grid(rows, cols)
 
 # pathfinding settings
 start = (0, 0)
@@ -81,7 +79,7 @@ while True:
 
     # draw click
     pg.draw.rect(sc, pg.Color('magenta'), get_rect(mouse_pos[0], mouse_pos[1]), border_radius=TILE // 3)
-    
+
     # draw path
     total_weight = 0
     path_head, path_segment = goal, goal
@@ -93,6 +91,12 @@ while True:
 
     pg.draw.rect(sc, pg.Color('blue'), get_rect(*start), border_radius=TILE // 3)
     pg.draw.rect(sc, pg.Color('magenta'), get_rect(*path_head), border_radius=TILE // 3)
+
+    # draw weight
+    pg.draw.rect(sc, pg.Color(150, 150, 150), pg.Rect(810, 0, 90, 90))
+    text = font.render(str(total_weight), True, 'black', (150, 150, 150, 150))
+    text_rect = text.get_rect(center=(855, 45))
+    sc.blit(text, text_rect)
 
     # interaction
     for event in pg.event.get():
@@ -141,9 +145,6 @@ while True:
                     pg.display.set_caption('A* Search')
                     queue, visited = pathfinding.astar(start, mouse_pos, graph, weight)
                     goal = mouse_pos
-                    
-            if event.key == pg.K_w:
-                print(total_weight)
 
     pg.display.flip()
     clock.tick(30)
