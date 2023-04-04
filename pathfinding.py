@@ -43,7 +43,7 @@ def h(p, goal, weight):
         h += weight[(max(x1, x2), y)]
     for x in range(min(x1, x2) + 1, max(x1, x2) + 1):
         h += weight[(x, min(y1, y2))]
-
+    print(p, goal, h)
     return h
 
 def ucs(start, goal, graph, weight):
@@ -90,6 +90,8 @@ def astar(start, goal, graph, weight):
 
     while queue:
         queue = sorted(queue, key=lambda x: x[0])
+        print(queue)
+        print()
         cur_node = queue.pop(0)
         cur_tup = cur_node[1]
         if cur_tup == goal:
