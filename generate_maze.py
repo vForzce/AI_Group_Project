@@ -11,7 +11,7 @@ def get_next_nodes(grid, x, y):
     ways = [0, -1], [-1, 0], [0, 1], [1, 0]
     return [(x + dx, y + dy) for dx, dy in ways if check_next_node(x + dx, y + dy)]
 
-def new_grid(rows, cols):
+def new_grid(rows, cols, rand = True):
     # random grid
     grid = [[1 if random() < 0.2 else 0 for _ in range(cols)] for _ in range(rows)]
     grid[0][0] = 0
@@ -23,9 +23,10 @@ def new_grid(rows, cols):
     weight = {}
     for y, row in enumerate(grid):
         for x, col in enumerate(row):
+            weight[(x, y)] = ((y // 4) + 1) if rand else 1
             if not col:
                 graph[(x, y)] = graph.get((x, y), []) + get_next_nodes(grid, x, y)
-                weight[(x, y)] = (y // 4) + 1
+
     weight[(0, 0)] = 0
     return grid, graph, weight
 
@@ -34,13 +35,15 @@ def draw_mouse_cursor():
     grid_x, grid_y = x // TILE, y // TILE
     pg.draw.rect(sc, pg.Color('red'), get_rect(grid_x, grid_y))
 
-def draw_grid(grid):
+def draw_grid(grid, rand = True):
     # fill screen
-    sc.fill(pg.Color(80, 80, 80))
-    pg.draw.rect(sc, pg.Color(60, 60, 60), pg.Rect(0, 120, 902, 120))
-    pg.draw.rect(sc, pg.Color(40, 40, 40), pg.Rect(0, 240, 902, 120))
-    pg.draw.rect(sc, pg.Color(20, 20, 20), pg.Rect(0, 360, 902, 120))
-    pg.draw.rect(sc, pg.Color(0, 0, 0), pg.Rect(0, 480, 902, 120))
+    sc.fill(pg.Color(0, 0, 0))
+    if rand:
+        pg.draw.rect(sc, pg.Color(80, 80, 80), pg.Rect(0, 0, 902, 120))
+        pg.draw.rect(sc, pg.Color(60, 60, 60), pg.Rect(0, 120, 902, 120))
+        pg.draw.rect(sc, pg.Color(40, 40, 40), pg.Rect(0, 240, 902, 120))
+        pg.draw.rect(sc, pg.Color(20, 20, 20), pg.Rect(0, 360, 902, 120))
+
     # draw grid
     [[pg.draw.rect(sc, pg.Color('darkorange'), get_rect(x, y), border_radius=TILE // 5)
       for x, col in enumerate(row) if col] for y, row in enumerate(grid)]
@@ -65,12 +68,13 @@ grid, graph, weight = new_grid(rows, cols)
 # pathfinding settings
 start = (0, 0)
 mouse_pos = (0, 0)
+rand = True
 goal = start
 queue = deque([start])
 visited = {start: None}
 
 while True:
-    draw_grid(grid)
+    draw_grid(grid, rand)
     draw_mouse_cursor()
     
     # draw visited nodes
@@ -108,6 +112,7 @@ while True:
             x, y = pg.mouse.get_pos()
             grid_x, grid_y = x // TILE, y // TILE
             mouse_pos = (grid_x, grid_y)
+            print(pathfinding.h(start, mouse_pos, weight))
         
         # choose algorithm
         if event.type == pg.KEYDOWN:
@@ -116,7 +121,16 @@ while True:
                 grid, graph, weight = new_grid(rows, cols)
                 queue = deque([start])
                 visited = {start: None}
-                draw_grid(grid)
+                rand = True
+                draw_grid(grid, rand)
+            
+            if event.key == pg.K_n:
+                pg.display.set_caption('Path Finding Algorithms')
+                grid, graph, weight = new_grid(rows, cols, False)
+                queue = deque([start])
+                visited = {start: None}
+                rand = False
+                draw_grid(grid, rand)
                 
             if event.key == pg.K_d:
                 if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
@@ -139,7 +153,7 @@ while True:
             if event.key == pg.K_g:
                 if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
                     pg.display.set_caption('Greedy Search')
-                    queue, visited = pathfinding.greedy(start, mouse_pos, graph)
+                    queue, visited = pathfinding.greedy(start, mouse_pos, graph, weight)
                     goal = mouse_pos
             
             if event.key == pg.K_a:
