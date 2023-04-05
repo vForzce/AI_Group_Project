@@ -8,14 +8,6 @@ RES = WIDTH, HEIGHT = 900, 600
 TILE = 30
 cols, rows = WIDTH // TILE, HEIGHT // TILE
 
-# initialize pygame
-pg.init()
-sc = pg.display.set_mode(RES)
-clock = pg.time.Clock()
-pg.display.set_caption("Path Finding Algorithms")
-
-font = pg.font.SysFont('arial', 50, bold=True)
-
 def get_rect(x, y):
     return x * TILE + 1, y * TILE + 1, TILE - 2, TILE - 2
 
@@ -43,12 +35,12 @@ def new_grid(rows, cols, rand=True):
     weight[(0, 0)] = 0
     return grid, graph, weight
 
-def draw_mouse_cursor():
+def draw_mouse_cursor(sc):
     x, y = pg.mouse.get_pos()
     grid_x, grid_y = x // TILE, y // TILE
     pg.draw.rect(sc, pg.Color('red'), get_rect(grid_x, grid_y))
     
-def draw_grid(grid, rand = True):
+def draw_grid(sc, grid, rand = True):
     # fill screen
     sc.fill(pg.Color(0, 0, 0))
     if rand:
@@ -61,16 +53,9 @@ def draw_grid(grid, rand = True):
     [[pg.draw.rect(sc, pg.Color('darkorange'), get_rect(x, y), border_radius=TILE // 5)
       for x, col in enumerate(row) if col] for y, row in enumerate(grid)]
 
-def visualization():
+def visualization(sc, clock, font, start, mouse_pos, rand, goal, queue, visited):
     # pathfinding settings
     grid, graph, weight = new_grid(rows, cols)
-
-    start = (0, 0)
-    mouse_pos = (0, 0)
-    rand = True
-    goal = start
-    queue = deque([start])
-    visited = {start: None}
 
     while True:
         draw_grid(grid, rand)
@@ -100,3 +85,89 @@ def visualization():
         text = font.render(str(total_weight), True, 'black', (150, 150, 150, 150))
         text_rect = text.get_rect(center=(855, 45))
         sc.blit(text, text_rect)
+        
+        def run_algorithm(start, goal, queue, visited):
+            # interaction
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    exit()
+                
+                # set goal
+                if pg.mouse.get_pressed()[0]:
+                    x, y = pg.mouse.get_pos()
+                    grid_x, grid_y = x // TILE, y // TILE
+                    mouse_pos = (grid_x, grid_y)
+                    print(pathfinding.h(start, mouse_pos, weight))
+                
+                # choose algorithm
+                if event.type == pg.KEYDOWN:
+                    if event.key == pg.K_r:
+                        pg.display.set_caption('Path Finding Algorithms')
+                        grid, graph, weight = new_grid(rows, cols)
+                        queue = deque([start])
+                        visited = {start: None}
+                        rand = True
+                        draw_grid(grid, rand)
+                    
+                    if event.key == pg.K_n:
+                        pg.display.set_caption('Path Finding Algorithms')
+                        grid, graph, weight = new_grid(rows, cols, False)
+                        queue = deque([start])
+                        visited = {start: None}
+                        rand = False
+                        draw_grid(grid, rand)
+                        
+                    if event.key == pg.K_d:
+                        if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
+                            pg.display.set_caption('Depth First Search')
+                            queue, visited = pathfinding.dfs(start, mouse_pos, graph)
+                            goal = mouse_pos
+
+                    if event.key == pg.K_b:
+                        if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
+                            pg.display.set_caption('Breath First Search')
+                            queue, visited = pathfinding.bfs(start, mouse_pos, graph)
+                            goal = mouse_pos
+                    
+                    if event.key == pg.K_u:
+                        if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
+                            pg.display.set_caption('Uniform Cost Search')
+                            queue, visited = pathfinding.ucs(start, mouse_pos, graph, weight)
+                            goal = mouse_pos
+                            
+                    if event.key == pg.K_g:
+                        if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
+                            pg.display.set_caption('Greedy Search')
+                            queue, visited = pathfinding.greedy(start, mouse_pos, graph, weight)
+                            goal = mouse_pos
+                    
+                    if event.key == pg.K_a:
+                        if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
+                            pg.display.set_caption('A* Search')
+                            queue, visited = pathfinding.astar(start, mouse_pos, graph, weight)
+                            goal = mouse_pos
+
+        run_algorithm(start, goal, queue, visited)
+        pg.display.flip()
+        clock.tick
+        
+    
+def main():
+     # initialize pygame
+    pg.init()
+    sc = pg.display.set_mode(RES)
+    clock = pg.time.Clock()
+    pg.display.set_caption("Path Finding Algorithms")
+    font = pg.font.SysFont('arial', 50, bold=True)
+    
+    start = (0, 0)
+    mouse_pos = (0, 0)
+    rand = True
+    goal = start
+    queue = deque([start])
+    visited = {start: None}
+    
+    visualization(sc, clock, font, start, mouse_pos, rand, goal, queue, visited)
+    
+if __name__ == "__main__":
+    main()
