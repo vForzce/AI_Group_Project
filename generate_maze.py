@@ -8,6 +8,14 @@ RES = WIDTH, HEIGHT = 900, 600
 TILE = 30
 cols, rows = WIDTH // TILE, HEIGHT // TILE
 
+# initialize pygame
+pg.init()
+sc = pg.display.set_mode(RES)
+clock = pg.time.Clock()
+pg.display.set_caption("Path Finding Algorithms")
+
+font = pg.font.SysFont('arial', 50, bold=True)
+
 def get_rect(x, y):
     return x * TILE + 1, y * TILE + 1, TILE - 2, TILE - 2
 
@@ -34,3 +42,61 @@ def new_grid(rows, cols, rand=True):
 
     weight[(0, 0)] = 0
     return grid, graph, weight
+
+def draw_mouse_cursor():
+    x, y = pg.mouse.get_pos()
+    grid_x, grid_y = x // TILE, y // TILE
+    pg.draw.rect(sc, pg.Color('red'), get_rect(grid_x, grid_y))
+    
+def draw_grid(grid, rand = True):
+    # fill screen
+    sc.fill(pg.Color(0, 0, 0))
+    if rand:
+        pg.draw.rect(sc, pg.Color(80, 80, 80), pg.Rect(0, 0, 902, 120))
+        pg.draw.rect(sc, pg.Color(60, 60, 60), pg.Rect(0, 120, 902, 120))
+        pg.draw.rect(sc, pg.Color(40, 40, 40), pg.Rect(0, 240, 902, 120))
+        pg.draw.rect(sc, pg.Color(20, 20, 20), pg.Rect(0, 360, 902, 120))
+
+    # draw grid
+    [[pg.draw.rect(sc, pg.Color('darkorange'), get_rect(x, y), border_radius=TILE // 5)
+      for x, col in enumerate(row) if col] for y, row in enumerate(grid)]
+
+def visualization():
+    # pathfinding settings
+    grid, graph, weight = new_grid(rows, cols)
+
+    start = (0, 0)
+    mouse_pos = (0, 0)
+    rand = True
+    goal = start
+    queue = deque([start])
+    visited = {start: None}
+
+    while True:
+        draw_grid(grid, rand)
+        draw_mouse_cursor()
+        
+        # draw visited nodes
+        [pg.draw.rect(sc, pg.Color('forestgreen'), get_rect(x, y)) for x, y in visited]
+        [pg.draw.rect(sc, pg.Color('darkslategray'), get_rect(x, y)) for x, y in queue]
+
+        # draw click
+        pg.draw.rect(sc, pg.Color('magenta'), get_rect(mouse_pos[0], mouse_pos[1]), border_radius=TILE // 3)
+
+     # draw path
+        total_weight = 0
+        path_head, path_segment = goal, goal
+        while path_segment and path_segment in visited:
+            pg.draw.rect(sc, pg.Color('white'), get_rect(*path_segment), TILE, border_radius=TILE // 3)
+            total_weight += weight[path_segment]
+            path_segment = visited[path_segment]
+            
+    
+        pg.draw.rect(sc, pg.Color('blue'), get_rect(*start), border_radius=TILE // 3)
+        pg.draw.rect(sc, pg.Color('magenta'), get_rect(*path_head), border_radius=TILE // 3)
+
+         # draw weight
+        pg.draw.rect(sc, pg.Color(150, 150, 150), pg.Rect(810, 0, 90, 90))
+        text = font.render(str(total_weight), True, 'black', (150, 150, 150, 150))
+        text_rect = text.get_rect(center=(855, 45))
+        sc.blit(text, text_rect)
