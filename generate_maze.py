@@ -26,8 +26,11 @@ def new_grid(rows, cols, rand = True):
             weight[(x, y)] = ((y // 4) + 1) if rand else 1
             if not col:
                 graph[(x, y)] = graph.get((x, y), []) + get_next_nodes(grid, x, y)
+            else:
+                weight[(x, y)] *= 2
 
     weight[(0, 0)] = 0
+
     return grid, graph, weight
 
 def draw_mouse_cursor():
@@ -112,7 +115,7 @@ while True:
             x, y = pg.mouse.get_pos()
             grid_x, grid_y = x // TILE, y // TILE
             mouse_pos = (grid_x, grid_y)
-            print(pathfinding.h(start, mouse_pos, weight))
+            # print(pathfinding.h(start, mouse_pos, weight))
         
         # choose algorithm
         if event.type == pg.KEYDOWN:
@@ -135,7 +138,7 @@ while True:
             if event.key == pg.K_d:
                 if mouse_pos and not grid[mouse_pos[1]][mouse_pos[0]]:
                     pg.display.set_caption('Depth First Search')
-                    queue, visited = pathfinding.dfs(start, mouse_pos, graph)
+                    u, visited = pathfinding.dfs(start, mouse_pos, graph)
                     goal = mouse_pos
 
             if event.key == pg.K_b:
