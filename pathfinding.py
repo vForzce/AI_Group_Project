@@ -34,23 +34,23 @@ def dfs(start, goal, graph):
                 
     return queue, visited
 
-# def h(p, goal, weight):
-#     h = 0
-#     x1, y1 = p
-#     x2, y2 = goal
+def h(p, goal, weight):
+    h = 0
+    x1, y1 = p
+    x2, y2 = goal
 
-#     for y in range(min(y1, y2) + 1, max(y1, y2) + 1):
-#         h += weight[(max(x1, x2), y)]
-#     for x in range(min(x1, x2) + 1, max(x1, x2) + 1):
-#         h += weight[(x, min(y1, y2))]
-#     # print(p, goal, h)
-#     return h
+    for y in range(min(y1, y2) + 1, max(y1, y2) + 1):
+        h += weight[(max(x1, x2), y)]
+    for x in range(min(x1, x2) + 1, max(x1, x2) + 1):
+        h += weight[(x, min(y1, y2))]
+    # print(p, goal, h)
+    return h
 
-def h(p, goal, weight, visited):
+def heu(p, goal, weight, visited):
     h = 0
     curr = goal
     
-    while curr != p and visited[curr]:
+    while curr != p and curr in visited:
         h += weight[curr]
         curr = visited[curr]
     
@@ -108,12 +108,12 @@ def astar(start, goal, graph, weight):
             break
 
         next_nodes = graph[cur_tup]
-        _, curr_ucsvisited = ucs(cur_tup, goal, graph, weight)
+        _, curr_visited = ucs(cur_tup, goal, graph, weight)
         for next_node in next_nodes:
             if next_node not in visited:
-                _, next_ucsvisited = ucs(next_node, goal, graph, weight)
-                cost = cur_node[0] - h(cur_tup, goal, weight, curr_ucsvisited) \
-                                    + weight[next_node] + h(next_node, goal, weight, next_ucsvisited)
+                _, next_visited = ucs(next_node, goal, graph, weight)
+                cost = cur_node[0] - heu(cur_tup, goal, weight, curr_visited) \
+                                    + weight[next_node] + heu(next_node, goal, weight, next_visited)
                 queue.append([cost, next_node])
                 visited[next_node] = cur_tup
                 
