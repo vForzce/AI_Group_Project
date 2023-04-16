@@ -26,8 +26,8 @@ def new_grid(rows, cols, rand = True):
             weight[(x, y)] = ((y // 4) + 1) if rand else 1
             if not col:
                 graph[(x, y)] = graph.get((x, y), []) + get_next_nodes(grid, x, y)
-            else:
-                weight[(x, y)] *= 2
+            # else:
+            #     weight[(x, y)] *= 2
 
     weight[(0, 0)] = 0
 
@@ -115,7 +115,7 @@ while True:
             x, y = pg.mouse.get_pos()
             grid_x, grid_y = x // TILE, y // TILE
             mouse_pos = (grid_x, grid_y)
-            # print(pathfinding.h(start, mouse_pos, weight))
+            print(pathfinding.h(start, mouse_pos, weight))
         
         # choose algorithm
         if event.type == pg.KEYDOWN:

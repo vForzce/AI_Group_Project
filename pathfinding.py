@@ -112,6 +112,8 @@ def astar(start, goal, graph, weight):
         for next_node in next_nodes:
             if next_node not in visited:
                 _, next_visited = ucs(next_node, goal, graph, weight)
+                # cost = cur_node[0] - h(cur_tup, goal, weight) \
+                #                     + weight[next_node] + h(next_node, goal, weight)
                 cost = cur_node[0] - heu(cur_tup, goal, weight, curr_visited) \
                                     + weight[next_node] + heu(next_node, goal, weight, next_visited)
                 queue.append([cost, next_node])
